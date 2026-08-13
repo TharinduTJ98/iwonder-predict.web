@@ -1,0 +1,146 @@
+<div class="dashboard">
+    <!-- Header Section -->
+    <div class="header">
+        <div class="header-content">
+            <h1>I-Wonder Forecast Dashboard</h1>
+            <p class="subtitle">
+                <span *ngIf="comparisonMode === 'compare'">Comparing {{currentYear}} against {{lastYear}}</span>
+                <span *ngIf="comparisonMode === 'single'">Viewing {{currentYear}} data only</span>
+                | <span class="compare-note">Prediction Type: {{selectedPredictionType === 'M' ? 'Monthly' : 'Weekly'}}</span>
+            </p>
+        </div>
+        <div class="header-controls">
+            <button class="btn-reset" (click)="resetFilters()" *ngIf="selectedProducts.length > 0 || selectedChannels.length > 0">
+                Reset filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <div class="filter-group">
+            <label class="filter-label">VIEW MODE</label>
+            <div class="filter-pills">
+                <button 
+                    class="filter-pill"
+                    [class.active]="comparisonMode === 'compare'"
+                    (click)="comparisonMode = 'compare'; onComparisonModeChange()">
+                    Compare 2026 vs 2025
+                </button>
+                <button 
+                    class="filter-pill"
+                    [class.active]="comparisonMode === 'single'"
+                    (click)="comparisonMode = 'single'; onComparisonModeChange()">
+                    2026 Only
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">PREDICTION TYPE</label>
+            <div class="filter-pills">
+                <button 
+                    class="filter-pill"
+                    [class.active]="selectedPredictionType === 'M'"
+                    (click)="selectedPredictionType = 'M'; onPredictionTypeChange()">
+                    Monthly
+                </button>
+                <button 
+                    class="filter-pill"
+                    [class.active]="selectedPredictionType === 'W'"
+                    (click)="selectedPredictionType = 'W'; onPredictionTypeChange()">
+                    Weekly
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">PRODUCT</label>
+            <div class="filter-pills">
+                <button 
+                    *ngFor="let product of products" 
+                    class="filter-pill"
+                    [class.active]="selectedProducts.includes(product)"
+                    (click)="toggleProduct(product)">
+                    {{product}}
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">CHANNEL</label>
+            <div class="filter-pills">
+                <button 
+                    *ngFor="let channel of channels" 
+                    class="filter-pill"
+                    [class.active]="selectedChannels.includes(channel)"
+                    (click)="toggleChannel(channel)">
+                    {{channel}}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards Section -->
+    <div class="metrics-section">
+        <h2 *ngIf="comparisonMode === 'compare'">This Year vs Last Year</h2>
+        <h2 *ngIf="comparisonMode === 'single'">{{currentYear}} Performance</h2>
+        <div class="metrics-grid">
+            <div class="metric-card" *ngFor="let metric of metricCards">
+                <div class="metric-label">{{metric.label}}</div>
+                <div class="metric-value">{{metric.value}}</div>
+                <div class="metric-footer" *ngIf="metric.changePercent !== undefined">
+                    <span class="change-indicator" [class]="metric.trend">
+                        <span class="arrow" [class]="metric.trend">
+                            {{metric.trend === 'up' ? '↑' : metric.trend === 'down' ? '↓' : '→'}}
+                        </span>
+                        {{metric.changePercent | number:'1.1-1'}}%
+                    </span>
+                    <span class="prior-value">vs {{metric.priorValue}} prior</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="chart-section">
+        <h3>Monthly Trend</h3>
+        <div class="chart-container">
+            <apx-chart
+                [series]="chartSeries"
+                [chart]="chart"
+                [colors]="chartColors"
+                [xaxis]="xaxis"
+                [stroke]="stroke"
+                [fill]="fill"
+                [legend]="legend"
+                [tooltip]="tooltip">
+            </apx-chart>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <!-- <div class="table-section">
+        <h3>Forecast Details</h3>
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Month</th>
+                <th>Predicted Quotes</th>
+                <th>Actual Quotes</th>
+                <th>Lower Bound</th>
+                <th>Upper Bound</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let item of forecast">
+                <td>{{item.forecastDate| date:'MMM yyyy'}}</td>
+                <td class="number-cell">{{item.predictedQuotes | number:'1.0-0'}}</td>
+                <td class="number-cell">{{item.actualQuotes | number:'1.0-0'}}</td>
+                <td class="number-cell">{{item.lowerBound | number:'1.0-0'}}</td>
+                <td class="number-cell">{{item.upperBound | number:'1.0-0'}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div> -->
+</div>

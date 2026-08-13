@@ -1,0 +1,252 @@
+.dashboard {
+    background: #f5f7fa;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-content h1 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #bdc3c7;
+}
+
+.compare-note {
+    color: #3498db;
+    font-weight: 600;
+}
+
+.header-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-reset {
+    padding: 10px 20px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.3s ease;
+}
+
+.btn-reset:hover {
+    background: #c0392b;
+}
+
+/* Filter Section */
+.filter-section {
+    background: white;
+    padding: 20px 30px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    min-width: 120px;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-pill {
+    padding: 8px 16px;
+    background: #ecf0f1;
+    border: 2px solid #bdc3c7;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2c3e50;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.filter-pill:hover {
+    border-color: #3498db;
+    background: #d6eaf8;
+    color: #2980b9;
+}
+
+.filter-pill.active {
+    background: #2c3e50;
+    border-color: #2c3e50;
+    color: white;
+}
+
+/* Metrics Section */
+.metrics-section {
+    padding: 30px;
+}
+
+.metrics-section h2 {
+    color: #2c3e50;
+    margin: 0 0 20px 0;
+    font-size: 18px;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.metric-card {
+    background: white;
+    border-left: 4px solid #3498db;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.metric-label {
+    font-size: 13px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.metric-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.change-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.change-indicator.up {
+    color: #27ae60;
+}
+
+.change-indicator.down {
+    color: #e74c3c;
+}
+
+.change-indicator.neutral {
+    color: #7f8c8d;
+}
+
+.arrow {
+    font-size: 16px;
+}
+
+.prior-value {
+    color: #7f8c8d;
+}
+
+/* Chart Section */
+.chart-section {
+    background: white;
+    margin: 20px 30px;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.chart-section h3 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.chart-container {
+    position: relative;
+    height: 450px;
+}
+
+/* Table Section */
+.table-section {
+    background: white;
+    margin: 20px 30px;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.table-section h3 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table thead {
+    background: #34495e;
+    color: white;
+}
+
+.data-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ecf0f1;
+    color: #2c3e50;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.number-cell {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+}
