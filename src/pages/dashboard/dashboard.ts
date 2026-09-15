@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import {
     ApexAxisChartSeries,
     ApexChart,
@@ -50,11 +50,13 @@ export class Dashboard implements OnInit{
     
     // Selected filters
     selectedProducts: string[] = [];
-    selectedChannels: string[] = [];
+    selectedPanels: string[] = [];
+    openDropdown: 'product' | 'panel' | null = null;
+    isLoading = signal(false);
     
     // Filter options
-    products = ['Breakdown', 'Taxi', 'Tourer', 'Static'];
-    channels = ['Confused.com', 'GoCompare', 'InsuranceCloud', 'Comparethemarket'];
+    products = ['Breakdown', 'Taxi', 'Tourer', 'Static', 'Motor'];
+    panels = ['Confused.com', 'GoCompare', 'InsuranceCloude', 'Comparethemarket'];
     
     // Metric cards
     metricCards: MetricCard[] = [];
@@ -127,33 +129,39 @@ export class Dashboard implements OnInit{
         this.lastYear = this.service.getLastYear();
         this.availableYears = [this.lastYear, this.currentYear];
         
+        this.cdr.detectChanges();
+    }
+
+    selectProduct(product: string) {
+        this.selectedProducts = [product];
+        this.openDropdown = null;
         this.loadComparisonData();
         this.cdr.detectChanges();
     }
 
-    toggleProduct(product: string) {
-        const index = this.selectedProducts.indexOf(product);
-        if (index > -1) {
-            this.selectedProducts.splice(index, 1);
-        } else {
-            this.selectedProducts.push(product);
-        }
+    selectPanel(panel: string) {
+        this.selectedPanels = [panel];
+        this.openDropdown = null;
         this.loadComparisonData();
+        this.cdr.detectChanges();
     }
 
-    toggleChannel(channel: string) {
-        const index = this.selectedChannels.indexOf(channel);
-        if (index > -1) {
-            this.selectedChannels.splice(index, 1);
-        } else {
-            this.selectedChannels.push(channel);
+    toggleDropdown(dropdown: 'product' | 'panel') {
+        this.openDropdown = this.openDropdown === dropdown ? null : dropdown;
+    }
+
+    @HostListener('document:click', ['$event'])
+    closeDropdowns(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.multi-select')) {
+            this.openDropdown = null;
         }
-        this.loadComparisonData();
     }
 
     resetFilters() {
         this.selectedProducts = [];
-        this.selectedChannels = [];
+        this.selectedPanels = [];
+        this.openDropdown = null;
         this.loadComparisonData();
     }
 
@@ -229,6 +237,18 @@ export class Dashboard implements OnInit{
     }
 
     loadComparisonData() {
+        if (this.selectedProducts.length === 0 || this.selectedPanels.length === 0) {
+            this.isLoading.set(false);
+            this.forecastThisYear = [];
+            this.forecastLastYear = [];
+            this.metricCards = [];
+            this.chartSeries = [];
+            this.xaxis = { ...this.xaxis, categories: [] };
+            this.cdr.detectChanges();
+            return;
+        }
+
+        this.isLoading.set(true);
         if (this.comparisonMode === 'compare') {
             this.loadYearComparison();
         } else {
@@ -237,7 +257,15 @@ export class Dashboard implements OnInit{
     }
 
     loadYearComparison() {
-        this.service.getForecastComparison(this.currentYear, this.lastYear, this.selectedPredictionType).subscribe(
+        const comparisonRequest = this.service.getFutureForecast(
+            this.currentYear,
+            this.lastYear,
+            this.selectedPanels[0],
+            this.selectedProducts[0],
+            this.selectedPredictionType
+        );
+
+        comparisonRequest.subscribe(
             result => {
                 this.forecastThisYear = result.year1;
                 this.forecastLastYear = result.year2;
@@ -271,11 +299,11 @@ export class Dashboard implements OnInit{
                     categories: axisLabels.map(label => label)
                 };
 
-                this.cdr.detectChanges();
+                this.isLoading.set(false);
             },
             error => {
                 console.error('Error loading comparison data:', error);
-                this.cdr.detectChanges();
+                this.isLoading.set(false);
             }
         );
     }
@@ -307,11 +335,11 @@ export class Dashboard implements OnInit{
                     categories: axisLabels.map(label => label)
                 };
 
-                this.cdr.detectChanges();
+                this.isLoading.set(false);
             },
             error => {
                 console.error('Error loading single year data:', error);
-                this.cdr.detectChanges();
+                this.isLoading.set(false);
             }
         );
     }
@@ -326,13 +354,54 @@ export class Dashboard implements OnInit{
 
         const percentChangeTotal = ((totalThisYear - totalLastYear) / totalLastYear) * 100;
         const percentChangeActual = ((actualThisYear - actualLastYear) / actualLastYear) * 100;
-        const accuracyThisYear = (actualThisYear / yearToDatePredictedQuotes) * 100;
-        const accuracyLastYear = (actualLastYear / totalLastYear) * 100;
-        const percentChangeAccuracy = accuracyThisYear - accuracyLastYear;
+
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const nextMonth = today.getMonth() + 2; 
+
+        const nextMonthQuote = dataThisYear.find(data => {
+            const forecastDate = new Date(data.forecastDate);
+
+            return (
+                forecastDate.getFullYear() === currentYear &&
+                forecastDate.getMonth() + 1 === nextMonth
+            );
+        });
+
+        const lastYearMonthQuote = dataLastYear.find(data => {
+            const forecastDate = new Date(data.forecastDate);
+
+            return (
+                forecastDate.getFullYear() === currentYear - 1 &&
+                forecastDate.getMonth() + 1 === nextMonth
+            );
+        });
+
+        const thisYearQuotes = nextMonthQuote?.predictedQuotes ?? 0;
+        const lastYearQuotes = lastYearMonthQuote?.predictedQuotes ?? 0;
+
+        const growthPercentage = lastYearQuotes !== 0
+            ? ((thisYearQuotes - lastYearQuotes) / lastYearQuotes) * 100
+            : 0;
 
         this.totalPrediction = totalThisYear + totalLastYear;
+        const nextMonthDate = new Date(
+            currentYear,
+            new Date().getMonth() + 1,
+            1
+        );
 
+        const nextMonthName = nextMonthDate.toLocaleString('default', {
+            month: 'long'
+        });
         this.metricCards = [
+            {
+                label: `${nextMonthName} Quote Growth (%)`,
+                value: nextMonthQuote?.predictedQuotes ?? 0,
+                changePercent: growthPercentage,
+                priorValue: lastYearMonthQuote?.predictedQuotes ?? 0,
+                trend: growthPercentage >= 0 ? 'up' : 'down'
+            },
             {
                 label: 'Total Predicted Quotes',
                 value: totalThisYear.toLocaleString(),
@@ -346,13 +415,6 @@ export class Dashboard implements OnInit{
                 changePercent: percentChangeActual,
                 priorValue: actualLastYear.toLocaleString(),
                 trend: percentChangeActual >= 0 ? 'up' : 'down'
-            },
-            {
-                label: 'Accuracy Rate',
-                value: accuracyThisYear.toFixed(1) + '%',
-                changePercent: percentChangeAccuracy,
-                priorValue: accuracyLastYear.toFixed(1) + '%',
-                trend: percentChangeAccuracy >= 0 ? 'up' : 'down'
             },
             {
                 label: 'Avg. Predicted Quotes',
@@ -371,8 +433,35 @@ export class Dashboard implements OnInit{
         const accuracyThisYear = data.length > 0 ? (actualThisYear / totalThisYear) * 100 : 0;
 
         this.totalPrediction = totalThisYear;
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const nextMonth = today.getMonth() + 2; 
 
+        const nextMonthQuote = data.find(data => {
+            const forecastDate = new Date(data.forecastDate);
+
+            return (
+                forecastDate.getFullYear() === currentYear &&
+                forecastDate.getMonth() + 1 === nextMonth
+            );
+        });
+        const nextMonthDate = new Date(
+            currentYear,
+            new Date().getMonth() + 1,
+            1
+        );
+
+        const nextMonthName = nextMonthDate.toLocaleString('default', {
+            month: 'long'
+        });
         this.metricCards = [
+            {
+                label: `${nextMonthName} Quote Growth`,
+                value: nextMonthQuote?.predictedQuotes ?? 0,
+                changePercent: undefined,
+                priorValue: undefined,
+                trend: 'neutral'
+            },
             {
                 label: 'Total Predicted Quotes',
                 value: totalThisYear.toLocaleString(),
@@ -383,13 +472,6 @@ export class Dashboard implements OnInit{
             {
                 label: 'Total Actual Quotes',
                 value: actualThisYear.toLocaleString(),
-                changePercent: undefined,
-                priorValue: undefined,
-                trend: 'neutral'
-            },
-            {
-                label: 'Accuracy Rate',
-                value: accuracyThisYear.toFixed(1) + '%',
                 changePercent: undefined,
                 priorValue: undefined,
                 trend: 'neutral'

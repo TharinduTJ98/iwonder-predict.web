@@ -23,7 +23,27 @@ export class ForecastService {
         return this.http.get<{
             year1: Forecast[];
             year2: Forecast[];
-        }>(`${this.api}/comparison?year1=${year1}&year2=${year2}&predictionType=${predictionType}`);
+        }>(`${this.api}/futureComparison?year1=${year1}&year2=${year2}&predictionType=${predictionType}`);
+    }
+
+    getFutureForecastComparison(year1: number, year2: number, panelName: string, productName: string, predictionType: 'M' | 'W'): Observable<{
+        year1: Forecast[];
+        year2: Forecast[];
+    }> {
+        return this.http.get<{
+            year1: Forecast[];
+            year2: Forecast[];
+        }>(`${this.api}/futureComparisonByFilters?year1=${year1}&year2=${year2}&panelName=${panelName}&productName=${productName}&predictionType=${predictionType}`);
+    }
+
+    getFutureForecast(year1: number, year2: number, panelName: string, productName: string, predictionType: 'M' | 'W'): Observable<{
+        year1: Forecast[];
+        year2: Forecast[];
+    }> {
+        return this.http.get<{
+            year1: Forecast[];
+            year2: Forecast[];
+        }>(`${this.api}/ForecastComparison?year1=${year1}&year2=${year2}&panelName=${panelName}&productName=${productName}&predictionType=${predictionType}`);
     }
 
     // Get current year and last year
