@@ -99,18 +99,6 @@
         </div>
     </div>
 
-    <section class="panel-strip" aria-label="Selected panels">
-        <div class="panel-strip-heading">
-            <span class="panel-kicker">ACTIVE PANELS</span>
-            <span class="panel-count">{{selectedPanels.length || panels.length}} available</span>
-        </div>
-        <div class="panel-list">
-            <span class="panel-name" *ngFor="let panel of (selectedPanels.length ? selectedPanels : panels)">
-                <span class="panel-status" aria-hidden="true"></span>{{panel}}
-            </span>
-        </div>
-    </section>
-
     <div class="selection-hint" *ngIf="!selectedProducts.length || !selectedPanels.length">
         Select both a product and panel to display the chart.
     </div>
@@ -144,7 +132,16 @@
 
         <!-- Chart Section -->
         <div class="chart-section">
-        <h3>Monthly Trend</h3>
+        <div class="chart-heading">
+            <div>
+                <span class="chart-kicker">PERFORMANCE TREND</span>
+                <h3>{{chartMetric === 'premium' ? 'Premium value trend' : 'Quote volume trend'}}</h3>
+            </div>
+            <div class="filter-pills chart-switch" role="group" aria-label="Chart metric">
+                <button type="button" class="filter-pill" [class.active]="chartMetric === 'quotes'" (click)="onChartMetricChange('quotes')">Quotes</button>
+                <button type="button" class="filter-pill" [class.active]="chartMetric === 'premium'" (click)="onChartMetricChange('premium')">Premium (£)</button>
+            </div>
+        </div>
         <div class="chart-container">
             <apx-chart
                 [series]="chartSeries"

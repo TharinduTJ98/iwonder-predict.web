@@ -12,28 +12,8 @@ export class ForecastService {
         return this.http.get<Forecast[]>(this.api);
     }
 
-    getForecastByYear(year: number, predictionType: 'M' | 'W'): Observable<Forecast[]> {
-        return this.http.get<Forecast[]>(`${this.api}/year/${year}?predictionType=${predictionType}`);
-    }
-
-    getForecastComparison(year1: number, year2: number, predictionType: 'M' | 'W'): Observable<{
-        year1: Forecast[];
-        year2: Forecast[];
-    }> {
-        return this.http.get<{
-            year1: Forecast[];
-            year2: Forecast[];
-        }>(`${this.api}/futureComparison?year1=${year1}&year2=${year2}&predictionType=${predictionType}`);
-    }
-
-    getFutureForecastComparison(year1: number, year2: number, panelName: string, productName: string, predictionType: 'M' | 'W'): Observable<{
-        year1: Forecast[];
-        year2: Forecast[];
-    }> {
-        return this.http.get<{
-            year1: Forecast[];
-            year2: Forecast[];
-        }>(`${this.api}/futureComparisonByFilters?year1=${year1}&year2=${year2}&panelName=${panelName}&productName=${productName}&predictionType=${predictionType}`);
+    getForecastByYear(year: number, panelName: string, productName: string, predictionType: 'M' | 'W'): Observable<Forecast[]> {
+        return this.http.get<Forecast[]>(`${this.api}/year/${year}?panelName=${panelName}&productName=${productName}&predictionType=${predictionType}`);
     }
 
     getFutureForecast(year1: number, year2: number, panelName: string, productName: string, predictionType: 'M' | 'W'): Observable<{

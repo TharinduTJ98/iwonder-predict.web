@@ -22,6 +22,8 @@ interface MetricCard {
     trend?: 'up' | 'down' | 'neutral';
 }
 
+type ChartMetric = 'quotes' | 'premium';
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, ChartComponent, FormsModule],
@@ -44,6 +46,7 @@ export class Dashboard implements OnInit{
     lastYear: number = 0;
     selectedPredictionType: 'M' | 'W' = 'M';
     comparisonMode: 'compare' | 'single' = 'compare';
+    chartMetric: ChartMetric = 'quotes';
     forecastThisYear: Forecast[] = [];
     forecastLastYear: Forecast[] = [];
     availableYears: number[] = [];
@@ -55,11 +58,12 @@ export class Dashboard implements OnInit{
     isLoading = signal(false);
     
     // Filter options
-    products = ['Breakdown', 'Taxi', 'Tourer', 'Static', 'Motor'];
+    products = ['Breakdown', 'Motorbike', 'Cycle', 'Gap'];
     panels = ['Confused.com', 'GoCompare', 'InsuranceCloude', 'Comparethemarket'];
     
     // Metric cards
     metricCards: MetricCard[] = [];
+    private allMetricCards: MetricCard[] = [];
     
     // Chart colors configuration - customize line colors here
     chartColors = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78'];
@@ -109,9 +113,7 @@ export class Dashboard implements OnInit{
     tooltip: ApexTooltip = {
         shared: true,
         intersect: false,
-        y: {
-            formatter: (value: number) => value != null ? Math.round(value).toString() : ''
-        }
+        custom: (options: any) => this.buildChartTooltip(options)
     };
 
     xaxis: ApexXAxis = {
@@ -171,6 +173,19 @@ export class Dashboard implements OnInit{
 
     onComparisonModeChange() {
         this.loadComparisonData();
+    }
+
+    onChartMetricChange(metric: ChartMetric) {
+        this.chartMetric = metric;
+        this.applyMetricCardSelection();
+        this.updateChartSeries(this.forecastThisYear, this.forecastLastYear);
+    }
+
+    private applyMetricCardSelection() {
+        const premiumSelected = this.chartMetric === 'premium';
+        this.metricCards = this.allMetricCards.filter(metric =>
+            premiumSelected ? metric.label.includes('Premium') : !metric.label.includes('Premium')
+        );
     }
 
     // Helper function to get week number from date
@@ -236,6 +251,85 @@ export class Dashboard implements OnInit{
         });
     }
 
+    private buildChartTooltip(options: any): string {
+        const dataPointIndex = options.dataPointIndex as number;
+        const categories = options.w.globals.categoryLabels as string[];
+        const category = categories?.[dataPointIndex] ?? '';
+        const series = options.w.globals.series as Array<Array<number | null>>;
+        const isComparison = this.comparisonMode === 'compare';
+        const predictedThisYear = series[0]?.[dataPointIndex];
+        const actualThisYear = series[1]?.[dataPointIndex];
+        const predictedLastYear = isComparison ? series[2]?.[dataPointIndex] : null;
+        const actualLastYear = isComparison ? series[3]?.[dataPointIndex] : null;
+
+        const metricLabel = this.chartMetric === 'premium' ? 'PREMIUM' : 'QUOTES';
+
+        return `
+            <div class="forecast-tooltip">
+                <div class="forecast-tooltip-title">${this.formatTooltipDate(category)}</div>
+                ${this.buildTooltipMetric(
+                    `PREDICTED ${metricLabel}`,
+                    '#1f77b4',
+                    predictedThisYear,
+                    predictedLastYear,
+                    isComparison ? 'vs prior year' : 'current forecast'
+                )}
+                ${this.buildTooltipMetric(
+                    `ACTUAL ${metricLabel}`,
+                    '#ff7f0e',
+                    actualThisYear,
+                    actualLastYear,
+                    isComparison ? 'vs prior year' : 'vs forecast'
+                )}
+            </div>
+        `;
+    }
+
+    private buildTooltipMetric(
+        label: string,
+        color: string,
+        currentValue: number | null | undefined,
+        priorValue: number | null | undefined,
+        changeLabel: string
+    ): string {
+        const change = currentValue != null && priorValue != null && priorValue !== 0
+            ? ((currentValue - priorValue) / priorValue) * 100
+            : null;
+        const changeClass = change != null && change >= 0 ? 'positive' : 'negative';
+        const changeIcon = change != null && change >= 0 ? '↗' : '↘';
+        const priorRow = priorValue != null
+            ? `<div class="forecast-tooltip-row"><span>LY: </span><strong>${this.formatTooltipValue(priorValue)}</strong></div>`
+            : '';
+        const changeRow = change != null
+            ? `<div class="forecast-tooltip-change ${changeClass}">${changeIcon} ${Math.abs(change).toFixed(2)}% <span>${changeLabel}</span></div>`
+            : '';
+
+        return `
+            <div class="forecast-tooltip-metric">
+                <div class="forecast-tooltip-label"><span class="forecast-tooltip-dot" style="background:${color}"></span>${label}</div>
+                <div class="forecast-tooltip-row"><span>TY: </span><strong>${this.formatTooltipValue(currentValue)}</strong></div>
+                ${priorRow}
+                ${changeRow}
+            </div>
+        `;
+    }
+
+    private formatTooltipValue(value: number | null | undefined): string {
+        return value == null
+            ? '—'
+            : `${this.chartMetric === 'premium' ? '£' : ''}${Math.round(value).toLocaleString('en-GB')}`;
+    }
+
+    private formatTooltipDate(category: string): string {
+        if (!category) {
+            return '';
+        }
+
+        return this.selectedPredictionType === 'W'
+            ? `${category}, ${this.currentYear}`
+            : `${category} ${this.currentYear}`;
+    }
+
     loadComparisonData() {
         if (this.selectedProducts.length === 0 || this.selectedPanels.length === 0) {
             this.isLoading.set(false);
@@ -274,24 +368,7 @@ export class Dashboard implements OnInit{
 
                 const axisLabels = this.getSharedAxisLabels(result.year1, result.year2);
 
-                this.chartSeries = [
-                    {
-                        name: `Predicted Quotes ${this.currentYear}`,
-                        data: this.getAlignedSeriesData(result.year1, axisLabels, x => Math.round(x.predictedQuotes))
-                    },
-                    {
-                        name: `Actual Quotes ${this.currentYear}`,
-                        data: this.getAlignedSeriesData(result.year1, axisLabels, x => Math.round(x.actualQuotes || 0))
-                    },
-                    {
-                        name: `Predicted Quotes ${this.lastYear}`,
-                        data: this.getAlignedSeriesData(result.year2, axisLabels, x => Math.round(x.predictedQuotes))
-                    },
-                    {
-                        name: `Actual Quotes ${this.lastYear}`,
-                        data: this.getAlignedSeriesData(result.year2, axisLabels, x => Math.round(x.actualQuotes || 0))
-                    }
-                ];
+                this.updateChartSeries(result.year1, result.year2, axisLabels);
 
                 this.xaxis = {
                     ...this.xaxis,
@@ -309,7 +386,7 @@ export class Dashboard implements OnInit{
     }
 
     loadSingleYear() {
-        this.service.getForecastByYear(this.currentYear, this.selectedPredictionType).subscribe(
+        this.service.getForecastByYear(this.currentYear, this.selectedPanels[0], this.selectedProducts[0], this.selectedPredictionType).subscribe(
             result => {
                 this.forecastThisYear = result;
                 this.forecastLastYear = [];
@@ -318,16 +395,7 @@ export class Dashboard implements OnInit{
 
                 const axisLabels = this.getSingleYearAxisLabels(result);
 
-                this.chartSeries = [
-                    {
-                        name: `Predicted Quotes ${this.currentYear}`,
-                        data: this.getAlignedSeriesData(result, axisLabels, x => Math.round(x.predictedQuotes))
-                    },
-                    {
-                        name: `Actual Quotes ${this.currentYear}`,
-                        data: this.getAlignedSeriesData(result, axisLabels, x => Math.round(x.actualQuotes || 0))
-                    }
-                ];
+                this.updateChartSeries(result, [], axisLabels);
 
                 this.xaxis = {
                     ...this.xaxis,
@@ -344,16 +412,49 @@ export class Dashboard implements OnInit{
         );
     }
 
+    private updateChartSeries(dataThisYear: Forecast[], dataLastYear: Forecast[], axisLabels?: string[]) {
+        const labels = axisLabels ?? (this.comparisonMode === 'compare'
+            ? this.getSharedAxisLabels(dataThisYear, dataLastYear)
+            : this.getSingleYearAxisLabels(dataThisYear));
+        const isPremium = this.chartMetric === 'premium';
+        const metricLabel = isPremium ? 'Premium' : 'Quotes';
+        const predictedValue = (item: Forecast) => isPremium ? item.predictedPremiumGbp : item.predictedQuotes;
+        const actualValue = (item: Forecast) => isPremium ? item.actualPremiumGbp : item.actualQuotes;
+
+        this.chartSeries = [
+            {
+                name: `Predicted ${metricLabel} ${this.currentYear}`,
+                data: this.getAlignedSeriesData(dataThisYear, labels, x => Math.round(predictedValue(x)))
+            },
+            {
+                name: `Actual ${metricLabel} ${this.currentYear}`,
+                data: this.getAlignedSeriesData(dataThisYear, labels, x => Math.round(actualValue(x) || 0))
+            },
+            ...(this.comparisonMode === 'compare' ? [
+                {
+                    name: `Predicted ${metricLabel} ${this.lastYear}`,
+                    data: this.getAlignedSeriesData(dataLastYear, labels, x => Math.round(predictedValue(x)))
+                },
+                {
+                    name: `Actual ${metricLabel} ${this.lastYear}`,
+                    data: this.getAlignedSeriesData(dataLastYear, labels, x => Math.round(actualValue(x) || 0))
+                }
+            ] : [])
+        ];
+    }
+
     updateMetricsForComparison(dataThisYear: Forecast[], dataLastYear: Forecast[]) {
         const totalThisYear = dataThisYear.reduce((a, b) => a + b.predictedQuotes, 0);
         const totalLastYear = dataLastYear.reduce((a, b) => a + b.predictedQuotes, 0);
         const actualThisYear = dataThisYear.reduce((a, b) => a + (b.actualQuotes || 0), 0);
         const actualLastYear = dataLastYear.reduce((a, b) => a + (b.actualQuotes || 0), 0);
-        const yearToDatePredictedQuotes = dataThisYear.filter(data => data.actualQuotes !== null) 
-                                                    .reduce((a, b) => a + b.predictedQuotes, 0);
+        const totalPremiumThisYear = dataThisYear.reduce((a, b) => a + b.predictedPremiumGbp, 0);
+        const totalPremiumLastYear = dataLastYear.reduce((a, b) => a + b.predictedPremiumGbp, 0);
+        const actualPremiumThisYear = dataThisYear.reduce((a, b) => a + (b.actualPremiumGbp || 0), 0);
+        const actualPremiumLastYear = dataLastYear.reduce((a, b) => a + (b.actualPremiumGbp || 0), 0);
 
-        const percentChangeTotal = ((totalThisYear - totalLastYear) / totalLastYear) * 100;
-        const percentChangeActual = ((actualThisYear - actualLastYear) / actualLastYear) * 100;
+        const percentChangeTotal = this.getPercentChange(totalThisYear, totalLastYear);
+        const percentChangeActual = this.getPercentChange(actualThisYear, actualLastYear);
 
         const today = new Date();
         const currentYear = today.getFullYear();
@@ -379,10 +480,11 @@ export class Dashboard implements OnInit{
 
         const thisYearQuotes = nextMonthQuote?.predictedQuotes ?? 0;
         const lastYearQuotes = lastYearMonthQuote?.predictedQuotes ?? 0;
+        const thisYearPremium = nextMonthQuote?.predictedPremiumGbp ?? 0;
+        const lastYearPremium = lastYearMonthQuote?.predictedPremiumGbp ?? 0;
 
-        const growthPercentage = lastYearQuotes !== 0
-            ? ((thisYearQuotes - lastYearQuotes) / lastYearQuotes) * 100
-            : 0;
+        const growthPercentage = this.getPercentChange(thisYearQuotes, lastYearQuotes);
+        const premiumGrowthPercentage = this.getPercentChange(thisYearPremium, lastYearPremium);
 
         this.totalPrediction = totalThisYear + totalLastYear;
         const nextMonthDate = new Date(
@@ -394,13 +496,20 @@ export class Dashboard implements OnInit{
         const nextMonthName = nextMonthDate.toLocaleString('default', {
             month: 'long'
         });
-        this.metricCards = [
+        this.allMetricCards = [
             {
                 label: `${nextMonthName} Quote Growth (%)`,
                 value: nextMonthQuote?.predictedQuotes ?? 0,
                 changePercent: growthPercentage,
                 priorValue: lastYearMonthQuote?.predictedQuotes ?? 0,
                 trend: growthPercentage >= 0 ? 'up' : 'down'
+            },
+            {
+                label: `${nextMonthName} Premium Growth (%)`,
+                value: this.formatCurrency(thisYearPremium),
+                changePercent: premiumGrowthPercentage,
+                priorValue: this.formatCurrency(lastYearPremium),
+                trend: premiumGrowthPercentage >= 0 ? 'up' : 'down'
             },
             {
                 label: 'Total Predicted Quotes',
@@ -419,16 +528,40 @@ export class Dashboard implements OnInit{
             {
                 label: 'Avg. Predicted Quotes',
                 value: (totalThisYear / dataThisYear.length).toFixed(0),
-                changePercent: ((totalThisYear / dataThisYear.length) - (totalLastYear / dataLastYear.length)) / (totalLastYear / dataLastYear.length) * 100,
+                changePercent: this.getPercentChange(totalThisYear / dataThisYear.length, totalLastYear / dataLastYear.length),
                 priorValue: (totalLastYear / dataLastYear.length).toFixed(0),
                 trend: (totalThisYear / dataThisYear.length) >= (totalLastYear / dataLastYear.length) ? 'up' : 'down'
+            },
+            {
+                label: 'Total Predicted Premium',
+                value: this.formatCurrency(totalPremiumThisYear),
+                changePercent: this.getPercentChange(totalPremiumThisYear, totalPremiumLastYear),
+                priorValue: this.formatCurrency(totalPremiumLastYear),
+                trend: totalPremiumThisYear >= totalPremiumLastYear ? 'up' : 'down'
+            },
+            {
+                label: 'Total Actual Premium',
+                value: this.formatCurrency(actualPremiumThisYear),
+                changePercent: this.getPercentChange(actualPremiumThisYear, actualPremiumLastYear),
+                priorValue: this.formatCurrency(actualPremiumLastYear),
+                trend: actualPremiumThisYear >= actualPremiumLastYear ? 'up' : 'down'
+            },
+            {
+                label: 'Avg. Predicted Premium',
+                value: this.formatCurrency(totalPremiumThisYear / dataThisYear.length),
+                changePercent: this.getPercentChange(totalPremiumThisYear / dataThisYear.length, totalPremiumLastYear / dataLastYear.length),
+                priorValue: this.formatCurrency(totalPremiumLastYear / dataLastYear.length),
+                trend: totalPremiumThisYear >= totalPremiumLastYear ? 'up' : 'down'
             }
         ];
+        this.applyMetricCardSelection();
     }
 
     updateMetricsForSingleYear(data: Forecast[]) {
         const totalThisYear = data.reduce((a, b) => a + b.predictedQuotes, 0);
         const actualThisYear = data.reduce((a, b) => a + (b.actualQuotes || 0), 0);
+        const totalPremiumThisYear = data.reduce((a, b) => a + b.predictedPremiumGbp, 0);
+        const actualPremiumThisYear = data.reduce((a, b) => a + (b.actualPremiumGbp || 0), 0);
         
         const accuracyThisYear = data.length > 0 ? (actualThisYear / totalThisYear) * 100 : 0;
 
@@ -454,7 +587,7 @@ export class Dashboard implements OnInit{
         const nextMonthName = nextMonthDate.toLocaleString('default', {
             month: 'long'
         });
-        this.metricCards = [
+        this.allMetricCards = [
             {
                 label: `${nextMonthName} Quote Growth`,
                 value: nextMonthQuote?.predictedQuotes ?? 0,
@@ -482,7 +615,31 @@ export class Dashboard implements OnInit{
                 changePercent: undefined,
                 priorValue: undefined,
                 trend: 'neutral'
+            },
+            {
+                label: 'Total Predicted Premium',
+                value: this.formatCurrency(totalPremiumThisYear),
+                trend: 'neutral'
+            },
+            {
+                label: 'Total Actual Premium',
+                value: this.formatCurrency(actualPremiumThisYear),
+                trend: 'neutral'
+            },
+            {
+                label: 'Avg. Predicted Premium',
+                value: this.formatCurrency(data.length > 0 ? totalPremiumThisYear / data.length : 0),
+                trend: 'neutral'
             }
         ];
+        this.applyMetricCardSelection();
+    }
+
+    private getPercentChange(current: number, prior: number): number {
+        return prior !== 0 ? ((current - prior) / prior) * 100 : 0;
+    }
+
+    private formatCurrency(value: number): string {
+        return `£${Math.round(value).toLocaleString('en-GB')}`;
     }
 }
