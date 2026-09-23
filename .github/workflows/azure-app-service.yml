@@ -85,7 +85,3 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: ${{ env.DIST_PATH }}
           startup-command: node server/server.mjs
-          slot-name: production
-
-      - name: Azure Logout
-        run: az logout
