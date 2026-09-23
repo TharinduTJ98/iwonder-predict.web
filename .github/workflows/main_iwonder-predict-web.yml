@@ -35,6 +35,7 @@ jobs:
       - name: Prepare SSR runtime package
         run: |
           cp package.json package-lock.json dist/Forecast.Web/
+          npm pkg set scripts.start="node server/server.mjs" --prefix dist/Forecast.Web
           npm ci --omit=dev --prefix dist/Forecast.Web
       
       - name: Upload artifact for deployment job
@@ -71,5 +72,4 @@ jobs:
           app-name: 'iwonder-predict-web'
           slot-name: 'Production'
           package: dist/Forecast.Web
-          startup-command: node server/server.mjs
           
