@@ -37,6 +37,8 @@ jobs:
           cp package.json package-lock.json dist/Forecast.Web/
           npm pkg set scripts.start="node server/server.mjs" --prefix dist/Forecast.Web
           npm ci --omit=dev --prefix dist/Forecast.Web
+          cd dist/Forecast.Web
+          zip -qr ../../Forecast.Web.zip .
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -71,5 +73,6 @@ jobs:
         with:
           app-name: 'iwonder-predict-web'
           slot-name: 'Production'
-          package: dist/Forecast.Web
+          package: Forecast.Web.zip
+          startup-command: 'node server/server.mjs'
           
