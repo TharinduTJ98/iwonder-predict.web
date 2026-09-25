@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 @Service()
 export class ForecastService {
     private http = inject(HttpClient);
-    private api = 'https://localhost:7081/api/forecast';
+    private api = 'iwonder-gzewb3d3hwafhma7.indiasouthcentral-01.azurewebsites.net/api/Forecast';
 
     getForecast(): Observable<Forecast[]> {
         return this.http.get<Forecast[]>(this.api);
