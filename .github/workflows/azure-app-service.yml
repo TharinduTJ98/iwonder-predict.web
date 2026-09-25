@@ -5,12 +5,14 @@ on:
     branches:
       - master
 
+
 permissions:
   id-token: write
   contents: read
 
 env:
   NODE_VERSION: '22.x'
+  AZURE_WEBAPP_NAME: YOUR_ANGULAR_APP_SERVICE_NAME
   DIST_PATH: dist/Forecast.Web
 
 jobs:
@@ -34,12 +36,6 @@ jobs:
 
       - name: Build Angular application
         run: npm run build
-
-      - name: Prepare SSR runtime dependencies
-        run: |
-          cp package.json package-lock.json ${{ env.DIST_PATH }}/
-          npm pkg set scripts.start="node server/server.mjs" --prefix ${{ env.DIST_PATH }}
-          npm ci --omit=dev --prefix ${{ env.DIST_PATH }}
 
       - name: Verify build output
         run: |
@@ -87,5 +83,10 @@ jobs:
       - name: Deploy Angular application
         uses: azure/webapps-deploy@v3
         with:
-          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
           package: ${{ env.DIST_PATH }}
+          startup-command: node server/server.mjs
+          slot-name: production
+
+      - name: Azure Logout
+        run: az logout
