@@ -1,9 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Service } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Forecast } from '../models/forecast';
 import { Observable } from 'rxjs';
 
-@Service()
+@Injectable({ providedIn: 'root' })
 export class ForecastService {
     private http = inject(HttpClient);
     private api = 'https://iwonder-gzewb3d3hwafhma7.indiasouthcentral-01.azurewebsites.net/api/Forecast';

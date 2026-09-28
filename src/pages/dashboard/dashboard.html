@@ -2,6 +2,7 @@
     <!-- Header Section -->
     <div class="header">
         <div class="header-content">
+            <div class="eyebrow">FORECAST OVERVIEW</div>
             <h1>I-Wonder Forecast Dashboard</h1>
             <p class="subtitle">
                 <span *ngIf="comparisonMode === 'compare'">Comparing {{currentYear}} against {{lastYear}}</span>
@@ -25,13 +26,13 @@
                     class="filter-pill"
                     [class.active]="comparisonMode === 'compare'"
                     (click)="comparisonMode = 'compare'; onComparisonModeChange()">
-                    Compare 2026 vs 2025
+                    Compare {{currentYear}} vs {{lastYear}}
                 </button>
                 <button 
                     class="filter-pill"
                     [class.active]="comparisonMode === 'single'"
                     (click)="comparisonMode = 'single'; onComparisonModeChange()">
-                    2026 Only
+                    {{currentYear}} Only
                 </button>
             </div>
         </div>
@@ -45,12 +46,12 @@
                     (click)="selectedPredictionType = 'M'; onPredictionTypeChange()">
                     Monthly
                 </button>
-                <button 
+                <!-- <button 
                     class="filter-pill"
                     [class.active]="selectedPredictionType === 'W'"
                     (click)="selectedPredictionType = 'W'; onPredictionTypeChange()">
                     Weekly
-                </button>
+                </button> -->
             </div>
         </div>
 
@@ -77,7 +78,7 @@
         </div>
 
         <div class="filter-group">
-            <label class="filter-label" for="panel-filter">PAN</label>
+            <label class="filter-label" for="panel-filter">PANEL</label>
             <div class="multi-select" [class.open]="openDropdown === 'panel'">
                 <button
                     id="panel-filter"
@@ -111,7 +112,7 @@
 
         <!-- Summary Cards Section -->
         <div class="metrics-section">
-        <h2 *ngIf="comparisonMode === 'compare'">This Year (2026) vs Last Year (2025)</h2>
+        <h2 *ngIf="comparisonMode === 'compare'">This Year ({{currentYear}}) vs Last Year ({{lastYear}})</h2>
         <h2 *ngIf="comparisonMode === 'single'">{{currentYear}} Performance</h2>
         <div class="metrics-grid">
             <div class="metric-card" *ngFor="let metric of metricCards">

@@ -1,2 +1,32 @@
-<app-dashboard></app-dashboard>
-<router-outlet></router-outlet>
+<div class="workspace-shell">
+	<aside class="sidebar" aria-label="Main navigation">
+		<a class="brand" href="#dashboard" (click)="$event.preventDefault(); activeView = 'dashboard'">
+			<span class="brand-mark" aria-hidden="true">IW</span>
+			<span class="brand-name">I-Wonder<span>Forecasts</span></span>
+		</a>
+
+		<div class="nav-caption">WORKSPACE</div>
+		<nav class="primary-nav">
+			<button type="button" class="nav-item" [class.active]="activeView === 'dashboard'"
+				[attr.aria-current]="activeView === 'dashboard' ? 'page' : null" (click)="activeView = 'dashboard'">
+				<span class="nav-icon" aria-hidden="true">▦</span>
+				<span>Overview</span>
+			</button>
+			<button type="button" class="nav-item" [class.active]="activeView === 'panel-comparison'"
+				[attr.aria-current]="activeView === 'panel-comparison' ? 'page' : null" (click)="activeView = 'panel-comparison'">
+				<span class="nav-icon" aria-hidden="true">⇄</span>
+				<span>Panel comparison</span>
+			</button>
+		</nav>
+
+		<div class="sidebar-footer">
+			<span class="status-dot" aria-hidden="true"></span>
+			Forecast data
+		</div>
+	</aside>
+
+	<main class="main-content">
+		<app-dashboard *ngIf="activeView === 'dashboard'"></app-dashboard>
+		<app-panel-comparison *ngIf="activeView === 'panel-comparison'"></app-panel-comparison>
+	</main>
+</div>

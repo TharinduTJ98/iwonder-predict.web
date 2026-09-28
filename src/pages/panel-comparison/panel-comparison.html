@@ -1,0 +1,132 @@
+<section class="comparison-page">
+    <header class="page-header">
+        <div>
+            <div class="eyebrow">PORTFOLIO ANALYSIS</div>
+            <h1>Panel comparison</h1>
+            <p>Compare predicted and actual quotes and premium for a panel, product and period.</p>
+        </div>
+        <div class="year-stamp">{{currentYear}} <span>vs</span> {{lastYear}}</div>
+    </header>
+
+    <section class="selection-layout" aria-label="Panel and product selection">
+        <div class="panel-picker">
+            <div class="section-heading">
+                <span class="step-index">01</span>
+                <div><h2>Choose a panel</h2><p>Select a source to see its products.</p></div>
+            </div>
+            <div class="panel-list">
+                <button type="button" class="panel-option" *ngFor="let panel of panels"
+                    [class.selected]="selectedPanel === panel" (click)="selectPanel(panel)">
+                    <span class="panel-indicator" aria-hidden="true"></span>
+                    <span>{{panel}}</span>
+                    <span class="panel-arrow" aria-hidden="true">›</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="product-picker" [class.waiting]="!selectedPanel">
+            <div class="section-heading">
+                <span class="step-index">02</span>
+                <div><h2>Choose a product</h2><p>{{selectedPanel || 'Select a panel first'}}</p></div>
+            </div>
+            <div class="product-list" *ngIf="selectedPanel; else choosePanel">
+                <button type="button" class="product-option" *ngFor="let product of products"
+                    [class.selected]="selectedProduct === product" (click)="selectedProduct = product; loadComparison()">
+                    {{product}}
+                    <span *ngIf="selectedProduct === product" aria-hidden="true">✓</span>
+                </button>
+            </div>
+            <ng-template #choosePanel><div class="empty-picker">Your panel's products will appear here.</div></ng-template>
+        </div>
+    </section>
+
+    <section class="results-section" *ngIf="selectedProduct">
+        <div class="results-heading">
+            <div>
+                <div class="eyebrow">{{selectedPanel}} / {{selectedProduct}}</div>
+                <h2>Quotes and premium by period</h2>
+            </div>
+            <div class="result-controls">
+                <div class="period-toggle" role="group" aria-label="Forecast period type">
+                    <button type="button" [class.active]="predictionType === 'M'" (click)="predictionType = 'M'; loadComparison()">Monthly</button>
+                    <!-- <button type="button" [class.active]="predictionType === 'W'" (click)="predictionType = 'W'; loadComparison()">Weekly</button> -->
+                </div>
+                <label class="period-select-label" for="period-select">PERIOD</label>
+                <select id="period-select" [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()" [disabled]="periods.length === 0">
+                    <option *ngFor="let period of periods" [ngValue]="period">{{formatPeriod(period)}}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="loading-state" *ngIf="isLoading()" role="status">Loading comparison...</div>
+        <div class="error-state" *ngIf="errorMessage" role="alert">{{errorMessage}}</div>
+        <div class="comparison-table" *ngIf="!isLoading() && !errorMessage && currentForecast && priorForecast">
+            <div class="table-row table-header">
+                <div class="period-cell">{{periodLabel}}</div>
+                <div class="year-cell current-year"><span class="year-dot"></span>{{currentYear}}</div>
+                <div class="year-cell prior-year"><span class="year-dot"></span>{{lastYear}}</div>
+                <div class="year-cell difference-cell">Change</div>
+            </div>
+            <div class="table-row data-row">
+                <div class="metric-name"><strong>Predicted quotes</strong><span>Forecast volume</span></div>
+                <div class="amount">{{formatCount(currentForecast.predictedQuotes)}}</div>
+                <div class="amount prior-amount">{{formatCount(priorForecast.predictedQuotes)}}</div>
+                <div class="difference" [class.positive]="changeDirection(currentForecast.predictedQuotes, priorForecast.predictedQuotes) === 'up'"
+                    [class.negative]="changeDirection(currentForecast.predictedQuotes, priorForecast.predictedQuotes) === 'down'">
+                    <span class="change-summary">
+                        <span aria-hidden="true">{{changeDirection(currentForecast.predictedQuotes, priorForecast.predictedQuotes) === 'up' ? '↑' : changeDirection(currentForecast.predictedQuotes, priorForecast.predictedQuotes) === 'down' ? '↓' : '→'}}</span>
+                        <span>{{formatPercentageChange(currentForecast.predictedQuotes, priorForecast.predictedQuotes)}}</span>
+                    </span>
+                    <span class="difference-amount">{{formatCount(currentForecast.predictedQuotes - priorForecast.predictedQuotes)}}</span>
+                </div>
+            </div>
+            <div class="table-row data-row">
+                <div class="metric-name"><strong>Actual quotes</strong><span>Recorded volume</span></div>
+                <div class="amount">{{formatCount(currentForecast.actualQuotes)}}</div>
+                <div class="amount prior-amount">{{formatCount(priorForecast.actualQuotes)}}</div>
+                <div class="difference" [class.positive]="changeDirection(currentForecast.actualQuotes, priorForecast.actualQuotes) === 'up'"
+                    [class.negative]="changeDirection(currentForecast.actualQuotes, priorForecast.actualQuotes) === 'down'">
+                    <span class="change-summary">
+                        <span aria-hidden="true">{{changeDirection(currentForecast.actualQuotes, priorForecast.actualQuotes) === 'up' ? '↑' : changeDirection(currentForecast.actualQuotes, priorForecast.actualQuotes) === 'down' ? '↓' : '→'}}</span>
+                        <span>{{formatPercentageChange(currentForecast.actualQuotes, priorForecast.actualQuotes)}}</span>
+                    </span>
+                    <span class="difference-amount">{{formatCount(currentForecast.actualQuotes - priorForecast.actualQuotes)}}</span>
+                </div>
+            </div>
+            <div class="table-row data-row">
+                <div class="metric-name"><strong>Predicted premium</strong><span>Forecast value</span></div>
+                <div class="amount">{{formatPounds(currentForecast.predictedPremiumGbp)}}</div>
+                <div class="amount prior-amount">{{formatPounds(priorForecast.predictedPremiumGbp)}}</div>
+                <div class="difference" [class.positive]="changeDirection(currentForecast.predictedPremiumGbp, priorForecast.predictedPremiumGbp) === 'up'"
+                    [class.negative]="changeDirection(currentForecast.predictedPremiumGbp, priorForecast.predictedPremiumGbp) === 'down'">
+                    <span class="change-summary">
+                        <span aria-hidden="true">{{changeDirection(currentForecast.predictedPremiumGbp, priorForecast.predictedPremiumGbp) === 'up' ? '↑' : changeDirection(currentForecast.predictedPremiumGbp, priorForecast.predictedPremiumGbp) === 'down' ? '↓' : '→'}}</span>
+                        <span>{{formatPercentageChange(currentForecast.predictedPremiumGbp, priorForecast.predictedPremiumGbp)}}</span>
+                    </span>
+                    <span class="difference-amount">{{formatPounds(currentForecast.predictedPremiumGbp - priorForecast.predictedPremiumGbp)}}</span>
+                </div>
+            </div>
+            <div class="table-row data-row">
+                <div class="metric-name"><strong>Actual premium</strong><span>Recorded value</span></div>
+                <div class="amount">{{formatPounds(currentForecast.actualPremiumGbp)}}</div>
+                <div class="amount prior-amount">{{formatPounds(priorForecast.actualPremiumGbp)}}</div>
+                <div class="difference" [class.positive]="changeDirection(currentForecast.actualPremiumGbp, priorForecast.actualPremiumGbp) === 'up'"
+                    [class.negative]="changeDirection(currentForecast.actualPremiumGbp, priorForecast.actualPremiumGbp) === 'down'">
+                    <span class="change-summary">
+                        <span aria-hidden="true">{{changeDirection(currentForecast.actualPremiumGbp, priorForecast.actualPremiumGbp) === 'up' ? '↑' : changeDirection(currentForecast.actualPremiumGbp, priorForecast.actualPremiumGbp) === 'down' ? '↓' : '→'}}</span>
+                        <span>{{formatPercentageChange(currentForecast.actualPremiumGbp, priorForecast.actualPremiumGbp)}}</span>
+                    </span>
+                    <span class="difference-amount">{{formatPounds(currentForecast.actualPremiumGbp - priorForecast.actualPremiumGbp)}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="empty-results" *ngIf="!isLoading() && !errorMessage && (!currentForecast || !priorForecast)">
+            No matching {{predictionType === 'M' ? 'month' : 'week'}} is available for both years.
+        </div>
+    </section>
+
+    <div class="initial-state" *ngIf="!selectedProduct">
+        <span class="initial-mark" aria-hidden="true">↗</span>
+        <div><strong>Choose a panel and product</strong><p>Your year-over-year premium breakdown will appear here.</p></div>
+    </div>
+</section>

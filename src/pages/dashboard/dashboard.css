@@ -669,3 +669,254 @@
         align-self: flex-start;
     }
 }
+
+.dashboard {
+    min-height: 100vh;
+    padding: 30px clamp(18px, 3vw, 40px) 50px;
+    background: #f4f6f2;
+    color: #20302d;
+}
+
+.header {
+    align-items: flex-end;
+    padding: 0 0 22px;
+    border-bottom: 1px solid #dce2da;
+    background: transparent;
+    color: #20302d;
+}
+
+.header-content h1 {
+    margin: 7px 0 5px;
+    color: #20302d;
+    font-size: 28px;
+    font-weight: 750;
+}
+
+.eyebrow {
+    color: #517b54;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 1.1px;
+}
+
+.subtitle {
+    color: #728079;
+}
+
+.compare-note {
+    color: #517b54;
+}
+
+.btn-reset {
+    padding: 8px 12px;
+    border: 1px solid #d5ddd3;
+    border-radius: 4px;
+    background: #fff;
+    color: #31443d;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-reset:hover {
+    border-color: #8ca96d;
+    background: #edf3e4;
+}
+
+.filter-section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 24px;
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid #dce2da;
+    background: #fff;
+}
+
+.filter-group {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.filter-label {
+    min-width: 0;
+    color: #77847b;
+    font-size: 10px;
+    letter-spacing: 0.7px;
+}
+
+.filter-pills {
+    gap: 6px;
+}
+
+.filter-pill {
+    padding: 7px 11px;
+    border: 1px solid #d5ddd3;
+    border-radius: 3px;
+    background: #f7f8f6;
+    color: #42534b;
+    font-size: 12px;
+}
+
+.filter-pill:hover {
+    border-color: #c7d6b5;
+    background: #f1f5e9;
+    color: #29442f;
+}
+
+.filter-pill.active {
+    border-color: #496b4b;
+    background: #496b4b;
+    color: #fff;
+}
+
+.multi-select-trigger {
+    min-height: 38px;
+    border-color: #d2dbd2;
+    border-radius: 3px;
+    color: #31443d;
+    font-size: 12px;
+}
+
+.multi-select.open .multi-select-trigger,
+.multi-select-trigger:hover {
+    border-color: #8ca96d;
+    box-shadow: 0 0 0 2px #8ca96d26;
+}
+
+.select-chevron {
+    color: #557341;
+}
+
+.multi-select-menu {
+    border-color: #dce2da;
+    border-radius: 3px;
+}
+
+.multi-select-option:hover {
+    background: #f1f5e9;
+}
+
+.option-check {
+    color: #557341;
+}
+
+.selection-hint {
+    margin: 20px 0 0;
+    padding: 18px;
+    border-color: #dce2da;
+    border-radius: 3px;
+    background: #fff;
+    color: #728079;
+    font-size: 13px;
+}
+
+.dashboard-content {
+    min-height: 0;
+}
+
+.loading-overlay {
+    background: #f4f6f2cc;
+    color: #31443d;
+}
+
+.loading-spinner {
+    border-top-color: #557341;
+}
+
+.metrics-section {
+    padding: 24px 0 0;
+}
+
+.metrics-section h2 {
+    margin-bottom: 14px;
+    color: #273832;
+    font-size: 17px;
+}
+
+.metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+    gap: 12px;
+}
+
+.metric-card {
+    padding: 16px;
+    border: 1px solid #dce2da;
+    border-left: 3px solid #8ca96d;
+    border-radius: 3px;
+    box-shadow: none;
+}
+
+.metric-label {
+    color: #77847b;
+    font-size: 10px;
+    letter-spacing: 0.7px;
+}
+
+.metric-value {
+    color: #253a30;
+    font-size: 23px;
+}
+
+.change-indicator.up {
+    color: #4d7a45;
+}
+
+.change-indicator.down {
+    color: #bd6551;
+}
+
+.prior-value {
+    color: #89948d;
+}
+
+.chart-section {
+    margin: 20px 0 0;
+    padding: 20px;
+    border: 1px solid #dce2da;
+    border-radius: 3px;
+    box-shadow: none;
+}
+
+.chart-section h3 {
+    color: #273832;
+}
+
+.chart-kicker {
+    color: #517b54;
+}
+
+@media (max-width: 680px) {
+    .dashboard {
+        padding: 24px 16px 40px;
+    }
+
+    .header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .filter-section {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .filter-group {
+        align-items: stretch;
+    }
+
+    .filter-pills {
+        align-items: flex-start;
+    }
+
+    .multi-select {
+        width: 100%;
+    }
+
+    .metrics-section {
+        padding-top: 20px;
+    }
+
+    .chart-section {
+        padding: 16px 12px;
+    }
+}

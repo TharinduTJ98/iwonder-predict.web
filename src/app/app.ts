@@ -1,13 +1,14 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Dashboard } from "../pages/dashboard/dashboard";
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Dashboard } from '../pages/dashboard/dashboard';
+import { PanelComparison } from '../pages/panel-comparison/panel-comparison';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Dashboard],
+  imports: [CommonModule, Dashboard, PanelComparison],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('Forecast.Web');
+  activeView: 'dashboard' | 'panel-comparison' = 'dashboard';
 }
