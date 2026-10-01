@@ -11,10 +11,15 @@ import { AuthService } from '../../services/auth-service';
   styleUrl: './sign-in.css'
 })
 export class SignIn {
+  mode: 'sign-in' | 'register' = 'sign-in';
   username = '';
   password = '';
+  confirmPassword = '';
   loginError = '';
+  registrationError = '';
+  registrationSuccess = '';
   signingIn = false;
+  registering = false;
 
   constructor(
     private readonly auth: AuthService,
@@ -37,6 +42,31 @@ export class SignIn {
       error: () => {
         this.signingIn = false;
         this.loginError = 'Sign-in failed. Check your credentials and try again.';
+      }
+    });
+  }
+
+  register(): void {
+    this.registrationError = '';
+    this.registrationSuccess = '';
+    if (this.password !== this.confirmPassword) {
+      this.registrationError = 'Passwords do not match.';
+      return;
+    }
+
+    this.registering = true;
+    this.auth.register(this.username.trim(), this.password).subscribe({
+      next: () => {
+        this.registering = false;
+        this.mode = 'sign-in';
+        this.confirmPassword = '';
+        this.password = '';
+        this.loginError = '';
+        this.registrationSuccess = 'Account created. Sign in with your new credentials.';
+      },
+      error: () => {
+        this.registering = false;
+        this.registrationError = 'Account creation failed. Check your details and try again.';
       }
     });
   }

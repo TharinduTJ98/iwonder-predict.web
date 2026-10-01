@@ -1,11 +1,11 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService, AUTH_LOGIN_URL } from './auth-service';
+import { AuthService, AUTH_LOGIN_URL, AUTH_REGISTER_URL } from './auth-service';
 
 const authApiOrigin = new URL(AUTH_LOGIN_URL).origin;
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  if (request.url === AUTH_LOGIN_URL) {
+  if (request.url === AUTH_LOGIN_URL || request.url === AUTH_REGISTER_URL) {
     return next(request);
   }
 

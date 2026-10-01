@@ -9,7 +9,7 @@ import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { authInterceptor } from '../services/auth-interceptor';
-import { AUTH_LOGIN_URL } from '../services/auth-service';
+import { AUTH_LOGIN_URL, AUTH_REGISTER_URL } from '../services/auth-service';
 
 const validToken = 'header.eyJleHAiOjQxMDI0NDQ4MDB9.signature';
 
@@ -55,6 +55,29 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('app-dashboard')).not.toBeNull();
+  });
+
+  it('should create an account and return to sign-in', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await TestBed.inject(Router).navigateByUrl('/sign-in');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const signIn = fixture.debugElement.query(By.directive(SignIn)).componentInstance as SignIn;
+
+    signIn.mode = 'register';
+    signIn.username = 'new-user';
+    signIn.password = 'secure-password';
+    signIn.confirmPassword = 'secure-password';
+    signIn.register();
+    const registration = TestBed.inject(HttpTestingController).expectOne(AUTH_REGISTER_URL);
+    expect(registration.request.method).toBe('POST');
+    expect(registration.request.body).toEqual({ username: 'new-user', password: 'secure-password' });
+    registration.flush({});
+    fixture.detectChanges();
+
+    expect(signIn.mode).toBe('sign-in');
+    expect(signIn.registrationSuccess).toContain('Account created');
   });
 
   it('should attach the JWT only to requests sent to the auth API origin', () => {
