@@ -1,0 +1,53 @@
+<main class="sign-in-page">
+	<section class="sign-in-story" aria-label="Forecast workspace">
+		<a class="brand sign-in-brand" href="#" aria-label="I-Wonder Forecasts">
+			<span class="brand-mark" aria-hidden="true">IW</span>
+			<span class="brand-name">I-Wonder<span>Forecasts</span></span>
+		</a>
+		<div class="story-copy">
+			<div class="story-eyebrow"><span></span> FORECAST WORKSPACE</div>
+			<h1>See the shape<br>of what's ahead.</h1>
+			<p>One clear view for the decisions your team makes every month.</p>
+		</div>
+		<div class="forecast-visual" aria-hidden="true">
+			<div class="visual-heading"><span>MONTHLY OUTLOOK</span><span>2026</span></div>
+			<div class="visual-chart">
+				<span style="--bar-height: 33%"></span>
+				<span style="--bar-height: 48%"></span>
+				<span style="--bar-height: 42%"></span>
+				<span style="--bar-height: 65%"></span>
+				<span style="--bar-height: 59%"></span>
+				<span style="--bar-height: 83%"></span>
+				<span style="--bar-height: 74%"></span>
+				<span style="--bar-height: 100%"></span>
+			</div>
+			<div class="visual-months"><span>JAN</span><span>MAR</span><span>MAY</span><span>JUL</span><span>SEP</span><span>NOV</span></div>
+		</div>
+		<div class="story-footer">I-WONDER <span>·</span> PLANNING WITH CLARITY</div>
+	</section>
+
+	<section class="sign-in-panel">
+		<div class="sign-in-form-wrap">
+			<div class="form-kicker">YOUR WORKSPACE</div>
+			<h2>Welcome back</h2>
+			<p class="form-intro">Sign in to continue to your forecasts.</p>
+
+			<form (ngSubmit)="signIn()" #signInForm="ngForm">
+				<label for="username">Username</label>
+				<input id="username" name="username" type="text" autocomplete="username"
+					placeholder="Enter your username" [(ngModel)]="username" required>
+
+				<label for="password">Password</label>
+				<input id="password" name="password" type="password" autocomplete="current-password"
+					placeholder="Enter your password" [(ngModel)]="password" required>
+
+				<p class="login-error" *ngIf="loginError" role="alert">{{loginError}}</p>
+				<button class="sign-in-submit" type="submit" [disabled]="signInForm.invalid">
+					Sign in <span aria-hidden="true">→</span>
+				</button>
+			</form>
+			<div class="secure-note"><span aria-hidden="true">◈</span> Authorized workspace access</div>
+		</div>
+		<div class="panel-footnote">© I-Wonder Forecasts</div>
+	</section>
+</main>

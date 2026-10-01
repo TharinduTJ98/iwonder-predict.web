@@ -82,6 +82,7 @@
 	font-size: 13px;
 	font-weight: 600;
 	text-align: left;
+	text-decoration: none;
 }
 
 .nav-item:hover {
@@ -110,6 +111,26 @@
 	border-top: 1px solid #30443e;
 	color: #aebbb5;
 	font-size: 11px;
+}
+
+.sign-out {
+	display: grid;
+	width: 30px;
+	height: 30px;
+	margin-left: auto;
+	place-items: center;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: #aebbb5;
+	cursor: pointer;
+	font: inherit;
+	font-size: 18px;
+}
+
+.sign-out:hover {
+	background: #263b35;
+	color: #fff;
 }
 
 .status-dot {
@@ -149,8 +170,7 @@
 		flex-basis: 31px;
 	}
 
-	.nav-caption,
-	.sidebar-footer {
+	.nav-caption {
 		display: none;
 	}
 

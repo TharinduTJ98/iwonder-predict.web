@@ -1,14 +1,19 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Dashboard } from '../pages/dashboard/dashboard';
-import { PanelComparison } from '../pages/panel-comparison/panel-comparison';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AuthService } from '../services/auth-service';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, Dashboard, PanelComparison],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  activeView: 'dashboard' | 'panel-comparison' = 'dashboard';
+  constructor(readonly auth: AuthService, private readonly router: Router) {}
+
+  signOut(): void {
+    this.auth.signOut();
+    void this.router.navigateByUrl('/sign-in');
+  }
 }

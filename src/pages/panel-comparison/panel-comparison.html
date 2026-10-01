@@ -31,7 +31,7 @@
             </div>
             <div class="product-list" *ngIf="selectedPanel; else choosePanel">
                 <button type="button" class="product-option" *ngFor="let product of products"
-                    [class.selected]="selectedProduct === product" (click)="selectedProduct = product; loadComparison()">
+                    [class.selected]="selectedProduct === product" (click)="selectProduct(product)">
                     {{product}}
                     <span *ngIf="selectedProduct === product" aria-hidden="true">✓</span>
                 </button>
@@ -48,8 +48,8 @@
             </div>
             <div class="result-controls">
                 <div class="period-toggle" role="group" aria-label="Forecast period type">
-                    <button type="button" [class.active]="predictionType === 'M'" (click)="predictionType = 'M'; loadComparison()">Monthly</button>
-                    <!-- <button type="button" [class.active]="predictionType === 'W'" (click)="predictionType = 'W'; loadComparison()">Weekly</button> -->
+                    <button type="button" [class.active]="predictionType === 'M'" (click)="setPredictionType('M')">Monthly</button>
+                    <button type="button" [class.active]="predictionType === 'W'" (click)="setPredictionType('W')">Weekly</button>
                 </div>
                 <label class="period-select-label" for="period-select">PERIOD</label>
                 <select id="period-select" [(ngModel)]="selectedPeriod" (ngModelChange)="onPeriodChange()" [disabled]="periods.length === 0">

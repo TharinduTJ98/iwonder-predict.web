@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
 import { Forecast } from '../../models/forecast';
 import { ForecastService } from '../../services/forecast-service';
 
@@ -11,8 +13,10 @@ import { ForecastService } from '../../services/forecast-service';
     templateUrl: './panel-comparison.html',
     styleUrl: './panel-comparison.css'
 })
-export class PanelComparison {
+export class PanelComparison implements OnInit {
     private service = inject(ForecastService);
+    private route = inject(ActivatedRoute);
+    private router = inject(Router);
 
     readonly panels = ['Confused.com', 'GoCompare', 'InsuranceCloude', 'Comparethemarket'];
     readonly products = ['Breakdown', 'Motorbike', 'Cycle', 'Gap'];
@@ -30,10 +34,42 @@ export class PanelComparison {
     isLoading = signal(false);
     errorMessage = '';
 
+    ngOnInit() {
+        combineLatest([this.route.paramMap, this.route.queryParamMap]).subscribe(([params, query]) => {
+            this.selectedPanel = this.panels.find(panel => this.toSlug(panel) === params.get('panel')) ?? '';
+            this.selectedProduct = this.products.find(product => this.toSlug(product) === params.get('product')) ?? '';
+            this.predictionType = query.get('type') === 'W' ? 'W' : 'M';
+            const periodValue = query.get('period');
+            const period = periodValue === null ? null : Number(periodValue);
+            this.selectedPeriod = period !== null && Number.isInteger(period) ? period : null;
+
+            if (this.selectedPanel && this.selectedProduct) {
+                this.loadComparison();
+            } else {
+                this.clearComparison();
+            }
+        });
+    }
+
     selectPanel(panel: string) {
         this.selectedPanel = panel;
         this.selectedProduct = '';
         this.clearComparison();
+        void this.router.navigate(['/comparison', this.toSlug(panel)], {
+            queryParams: { type: this.predictionType }
+        });
+    }
+
+    selectProduct(product: string) {
+        this.selectedProduct = product;
+        void this.router.navigate(['/comparison', this.toSlug(this.selectedPanel), this.toSlug(product)], {
+            queryParams: { type: this.predictionType }
+        });
+    }
+
+    setPredictionType(type: 'M' | 'W') {
+        this.predictionType = type;
+        this.updateRouteOptions();
     }
 
     loadComparison() {
@@ -75,6 +111,7 @@ export class PanelComparison {
 
     onPeriodChange() {
         this.updateSelectedPeriod();
+        this.updateRouteOptions();
     }
 
     formatPeriod(period: number): string {
@@ -147,5 +184,18 @@ export class PanelComparison {
         this.currentYearData = [];
         this.lastYearData = [];
         this.errorMessage = '';
+    }
+
+    private toSlug(value: string): string {
+        return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    private updateRouteOptions() {
+        void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { type: this.predictionType, period: this.selectedPeriod },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+        });
     }
 }
