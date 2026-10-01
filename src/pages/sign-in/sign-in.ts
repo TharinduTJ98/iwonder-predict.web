@@ -14,6 +14,7 @@ export class SignIn {
   username = '';
   password = '';
   loginError = '';
+  signingIn = false;
 
   constructor(
     private readonly auth: AuthService,
@@ -22,16 +23,21 @@ export class SignIn {
   ) {}
 
   signIn(): void {
-    if (!this.auth.signIn(this.username.trim(), this.password)) {
-      this.loginError = 'Those credentials did not match. Try again.';
-      return;
-    }
-
     this.loginError = '';
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
-    const destination = returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
-      ? returnUrl
-      : '/dashboard';
-    void this.router.navigateByUrl(destination);
+    this.signingIn = true;
+    this.auth.signIn(this.username.trim(), this.password).subscribe({
+      next: () => {
+        this.signingIn = false;
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        const destination = returnUrl?.startsWith('/') && !returnUrl.startsWith('//')
+          ? returnUrl
+          : '/dashboard';
+        void this.router.navigateByUrl(destination);
+      },
+      error: () => {
+        this.signingIn = false;
+        this.loginError = 'Sign-in failed. Check your credentials and try again.';
+      }
+    });
   }
 }

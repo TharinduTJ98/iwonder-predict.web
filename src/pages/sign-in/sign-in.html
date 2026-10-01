@@ -42,7 +42,7 @@
 					placeholder="Enter your password" [(ngModel)]="password" required>
 
 				<p class="login-error" *ngIf="loginError" role="alert">{{loginError}}</p>
-				<button class="sign-in-submit" type="submit" [disabled]="signInForm.invalid">
+				<button class="sign-in-submit" type="submit" [disabled]="signInForm.invalid || signingIn">
 					Sign in <span aria-hidden="true">→</span>
 				</button>
 			</form>
