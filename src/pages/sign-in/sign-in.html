@@ -28,11 +28,11 @@
 
 	<section class="sign-in-panel">
 		<div class="sign-in-form-wrap">
-			<div class="form-kicker">YOUR WORKSPACE</div>
-			<h2>Welcome back</h2>
-			<p class="form-intro">Sign in to continue to your forecasts.</p>
+			<div class="form-kicker">{{ mode === 'sign-in' ? 'YOUR WORKSPACE' : 'GET STARTED' }}</div>
+			<h2>{{ mode === 'sign-in' ? 'Welcome back' : 'Create your account' }}</h2>
+			<p class="form-intro">{{ mode === 'sign-in' ? 'Sign in to continue to your forecasts.' : 'Create an account to access your forecasts.' }}</p>
 
-			<form (ngSubmit)="signIn()" #signInForm="ngForm">
+			<form *ngIf="mode === 'sign-in'" (ngSubmit)="signIn()" #signInForm="ngForm">
 				<label for="username">Username</label>
 				<input id="username" name="username" type="text" autocomplete="username"
 					placeholder="Enter your username" [(ngModel)]="username" required>
@@ -46,6 +46,28 @@
 					Sign in <span aria-hidden="true">→</span>
 				</button>
 			</form>
+			<form *ngIf="mode === 'register'" (ngSubmit)="register()" #registerForm="ngForm">
+				<label for="register-username">Username</label>
+				<input id="register-username" name="registerUsername" type="text" autocomplete="username"
+					placeholder="Choose a username" [(ngModel)]="username" required>
+
+				<label for="register-password">Password</label>
+				<input id="register-password" name="registerPassword" type="password" autocomplete="new-password"
+					placeholder="Create a password" [(ngModel)]="password" required>
+
+				<label for="confirm-password">Confirm password</label>
+				<input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password"
+					placeholder="Enter your password again" [(ngModel)]="confirmPassword" required>
+
+				<p class="login-error" *ngIf="registrationError" role="alert">{{registrationError}}</p>
+				<button class="sign-in-submit" type="submit" [disabled]="registerForm.invalid || registering">
+					Create account <span aria-hidden="true">→</span>
+				</button>
+			</form>
+			<p class="register-success" *ngIf="registrationSuccess" role="status">{{registrationSuccess}}</p>
+			<button class="mode-switch" type="button" (click)="mode = mode === 'sign-in' ? 'register' : 'sign-in'; registrationError = ''; registrationSuccess = ''">
+				{{ mode === 'sign-in' ? 'New here? Create an account' : 'Already have an account? Sign in' }}
+			</button>
 			<div class="secure-note"><span aria-hidden="true">◈</span> Authorized workspace access</div>
 		</div>
 		<div class="panel-footnote">© I-Wonder Forecasts</div>

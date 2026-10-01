@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Observable, map, tap } from 'rxjs';
 
 export const AUTH_LOGIN_URL = 'https://localhost:7081/api/Auth/login';
+export const AUTH_REGISTER_URL = 'https://localhost:7081/api/Auth/register';
 
 interface LoginResponse {
   accessToken?: string;
@@ -32,6 +33,10 @@ export class AuthService {
       tap(token => this.storeToken(token)),
       map(() => undefined)
     );
+  }
+
+  register(username: string, password: string): Observable<void> {
+    return this.http.post<void>(AUTH_REGISTER_URL, { username, password });
   }
 
   signOut(): void {
