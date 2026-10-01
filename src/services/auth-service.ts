@@ -3,8 +3,10 @@ import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, map, tap } from 'rxjs';
 
-export const AUTH_LOGIN_URL = 'https://localhost:7081/api/Auth/login';
-export const AUTH_REGISTER_URL = 'https://localhost:7081/api/Auth/register';
+export const AUTH_LOGIN_URL = 'https://iwonder-gzewb3d3hwafhma7.indiasouthcentral-01.azurewebsites.net/api/Forecast/Auth/login';
+// export const AUTH_LOGIN_URL = 'https://localhost:7081/api/Auth/login';
+export const AUTH_REGISTER_URL = 'https://iwonder-gzewb3d3hwafhma7.indiasouthcentral-01.azurewebsites.net/api/Forecast/Auth/register';
+// export const AUTH_REGISTER_URL = 'https://localhost:7081/api/Auth/register';
 
 interface LoginResponse {
   accessToken?: string;
